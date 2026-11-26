@@ -1,0 +1,279 @@
+/* ===== 顶栏（德臻科技风格）===== */
+:root {
+    --dz-nav-bg: #212c5f;
+    --dz-nav-bg-dark: #1a234c;
+    --sidebar-w: 260px;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    font-family: "Microsoft YaHei", "PingFang SC", -apple-system, sans-serif;
+    background: #eef1f6;
+    overflow: hidden;
+}
+
+.top-navbar {
+    height: 56px;
+    background: var(--dz-nav-bg);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+    position: relative;
+    z-index: 1030;
+}
+
+.top-navbar-inner {
+    height: 100%;
+    padding: 0 16px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #fff;
+}
+
+.brand-logo {
+    height: 36px;
+    width: auto;
+    max-width: 160px;
+    object-fit: contain;
+    margin-right: 12px;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.brand-name {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.brand-sub {
+    font-size: 10px;
+    opacity: .75;
+}
+
+.brand-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, .35);
+    margin: 0 14px;
+}
+
+.brand-title {
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.top-nav {
+    margin-left: 28px;
+    height: 100%;
+}
+
+.top-nav-link {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 18px;
+    color: rgba(255, 255, 255, .8);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.top-nav-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, .08);
+}
+
+.top-nav-link.active {
+    color: #fff;
+    background: var(--dz-nav-bg-dark);
+    box-shadow: inset 0 -3px 0 #3d7bfd;
+}
+
+.top-right {
+    color: #fff;
+}
+
+.top-date {
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.top-time {
+    font-size: 12px;
+    opacity: .85;
+}
+
+.env-badge {
+    background: #17a34a;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 400;
+}
+
+.env-badge i {
+    font-size: 7px;
+    vertical-align: middle;
+}
+
+.top-version {
+    margin-left: 14px;
+    font-size: 12px;
+    opacity: .85;
+}
+
+.user-menu {
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+/* ===== 页面主体布局 ===== */
+.page-body {
+    height: calc(100vh - 56px);
+}
+
+.workbench {
+    height: 100%;
+}
+
+/* ===== 左侧栏 ===== */
+.sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: #fff;
+    border-right: 1px solid #e3e7ee;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-search {
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 0;
+}
+
+.sidebar-group-header {
+    display: flex;
+    align-items: center;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c3e50;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.sidebar-group-header:hover {
+    background: #f5f7fa;
+}
+
+.sidebar-group-header .chevron {
+    font-size: 11px;
+    color: #98a3b3;
+    transition: transform .2s;
+}
+
+.sidebar-group-header[aria-expanded="false"] .chevron {
+    transform: rotate(-90deg);
+}
+
+.count-badge {
+    background: #e8eefc;
+    color: #3d7bfd;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.sidebar-items {
+    background: #fafbfd;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px 8px 32px; /* 缩进 */
+    font-size: 13px;
+    color: #45505d;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    word-break: break-all;
+}
+
+.sidebar-item:hover {
+    background: #f0f4fb;
+    color: #3d7bfd;
+}
+
+.sidebar-item.active {
+    background: #e8eefc;
+    color: #3d7bfd;
+    border-left-color: #3d7bfd;
+    font-weight: 600;
+}
+
+.sidebar-footer {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #8a94a6;
+    border-top: 1px solid #eef1f5;
+    background: #fafbfd;
+}
+
+/* ===== 右侧 PDF 区 ===== */
+.content-area {
+    background: #525659;
+    min-width: 0;
+}
+
+.viewer-toolbar {
+    height: 44px;
+    padding: 0 16px;
+    background: #fff;
+    border-bottom: 1px solid #e3e7ee;
+    font-size: 14px;
+}
+
+.viewer-body {
+    position: relative;
+    flex: 1;
+}
+
+#pdfFrame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+
+.viewer-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #cfd4da;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.viewer-placeholder i {
+    font-size: 64px;
+}

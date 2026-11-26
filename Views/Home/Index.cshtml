@@ -1,0 +1,180 @@
+@model IndexViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="workbench d-flex">
+
+    @* ===== 左侧栏：日期导航（可折叠缩进） ===== *@
+    <aside class="sidebar">
+        <div class="p-2">
+            <input type="text" id="sidebarSearch" class="form-control form-control-sm sidebar-search"
+                   placeholder="搜索报告号、文件..." />
+        </div>
+        <nav class="sidebar-nav" id="sidebarNav">
+            @if (Model.Reports.Count == 0)
+            {
+                <div class="text-muted small px-3 py-2">暂无报告</div>
+            }
+            else
+            {
+                var groups = Model.Reports.GroupBy(r => r.DateDisplay).OrderByDescending(g => g.Key);
+                var first = true;
+                foreach (var group in groups)
+                {
+                    var collapseId = "grp_" + group.Key;
+                    var fileCount = group.Count();
+                    <div class="sidebar-group" data-date="@group.Key">
+                        <a class="sidebar-group-header" data-bs-toggle="collapse" href="#@collapseId"
+                           role="button" aria-expanded="true" aria-controls="@collapseId">
+                            <i class="bi bi-calendar3 me-1"></i>@group.Key
+                            <span class="badge count-badge ms-1">@fileCount</span>
+                            <i class="bi bi-chevron-down chevron ms-auto"></i>
+                        </a>
+                        <div class="collapse @(first ? "show" : "")" id="@collapseId">
+                            <ul class="sidebar-items list-unstyled mb-0">
+                                @foreach (var item in group)
+                                {
+                                    var active = first;
+                                    <li>
+                                        <a href="javascript:void(0);"
+                                           class="sidebar-item @(active ? "active" : "")"
+                                           data-register-id="@item.RegisterId"
+                                           data-report-no="@item.ReportNo"
+                                           data-title="@item.DisplayName">
+                                            <i class="bi bi-file-earmark-pdf me-1"></i>
+                                            <span class="item-text">@item.DisplayName</span>
+                                        </a>
+                                    </li>
+                                    first = false;
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
+            }
+        </nav>
+        <div class="sidebar-footer">
+            <i class="bi bi-hdd-network me-1"></i>就诊号：@(string.IsNullOrEmpty(Model.RegisterId) ? "-" : Model.RegisterId)
+        </div>
+    </aside>
+
+    @* ===== 右侧：PDF 内容区 ===== *@
+    <section class="content-area flex-grow-1 d-flex flex-column">
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="m-4 alert alert-warning" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span>@Html.Raw(Model.ErrorMessage)</span>
+            </div>
+        }
+        else
+        {
+            <div class="viewer-toolbar d-flex align-items-center">
+                <i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i>
+                <span class="fw-semibold" id="currentTitle">--</span>
+                <span class="ms-auto text-muted small" id="currentDate"></span>
+                <button type="button" class="btn btn-sm btn-outline-secondary ms-3" id="fullscreenBtn">
+                    <i class="bi bi-arrows-fullscreen me-1"></i>全屏
+                </button>
+            </div>
+            <div class="viewer-body" id="viewerBody">
+                <iframe id="pdfFrame" title="PDF 预览" src=""></iframe>
+                <div id="viewerPlaceholder" class="viewer-placeholder">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    <div>请在左侧选择报告以查看</div>
+                </div>
+            </div>
+        }
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var registerId = '@Model.RegisterId';
+            var reportNo = '@Model.ReportNo';
+            var reportType = '@(Model.IsPacs ? "pacs" : "lis")';
+            var frame = document.getElementById('pdfFrame');
+            var placeholder = document.getElementById('viewerPlaceholder');
+            var titleEl = document.getElementById('currentTitle');
+            var dateEl = document.getElementById('currentDate');
+            var viewerBody = document.getElementById('viewerBody');
+            var fullscreenBtn = document.getElementById('fullscreenBtn');
+
+            function pdfUrl(rid, rno) {
+                // 相对路径：根路径直连与 nginx 子路径代理（如 /pdfviewerweb/）均可用
+                var url = 'Home/Pdf?register_id=' + encodeURIComponent(rid) + '&report_type=' + encodeURIComponent(reportType);
+                if (rno) url += '&report_no=' + encodeURIComponent(rno);
+                return url;
+            }
+
+            function loadPdf(link) {
+                var rid = link.dataset.registerId;
+                var rno = link.dataset.reportNo;
+                var title = link.dataset.title;
+
+                document.querySelectorAll('.sidebar-item.active').forEach(function (el) { el.classList.remove('active'); });
+                link.classList.add('active');
+
+                titleEl.textContent = title;
+                var group = link.closest('.sidebar-group');
+                dateEl.textContent = group ? group.dataset.date : '';
+
+                if (frame) frame.src = pdfUrl(rid, rno);
+                if (placeholder) placeholder.style.display = 'none';
+            }
+
+            document.querySelectorAll('.sidebar-item').forEach(function (link) {
+                link.addEventListener('click', function () { loadPdf(link); });
+            });
+
+            // 全屏切换
+            if (fullscreenBtn && viewerBody) {
+                fullscreenBtn.addEventListener('click', function () {
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    } else {
+                        viewerBody.requestFullscreen();
+                    }
+                });
+                document.addEventListener('fullscreenchange', function () {
+                    var isFull = !!document.fullscreenElement;
+                    fullscreenBtn.innerHTML = isFull
+                        ? '<i class="bi bi-fullscreen-exit me-1"></i>退出全屏'
+                        : '<i class="bi bi-arrows-fullscreen me-1"></i>全屏';
+                });
+            }
+
+            // 默认加载：优先 URL 指定的报告号，否则第一条
+            var initial = reportNo
+                ? document.querySelector('.sidebar-item[data-report-no="' + reportNo + '"]')
+                : document.querySelector('.sidebar-item');
+            if (initial) loadPdf(initial);
+
+            // 侧边栏搜索过滤
+            var search = document.getElementById('sidebarSearch');
+            if (search) {
+                search.addEventListener('input', function () {
+                    var kw = this.value.trim().toLowerCase();
+                    document.querySelectorAll('.sidebar-group').forEach(function (group) {
+                        var visible = 0;
+                        group.querySelectorAll('.sidebar-item').forEach(function (item) {
+                            var text = item.textContent.toLowerCase();
+                            var show = !kw || text.indexOf(kw) !== -1;
+                            item.parentElement.style.display = show ? '' : 'none';
+                            if (show) visible++;
+                        });
+                        group.style.display = visible ? '' : 'none';
+                        if (kw) {
+                            var collapse = group.querySelector('.collapse');
+                            if (collapse && !collapse.classList.contains('show')) {
+                                bootstrap.Collapse.getOrCreateInstance(collapse).show();
+                            }
+                        }
+                    });
+                });
+            }
+        })();
+    </script>
+}
